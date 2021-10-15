@@ -3,7 +3,7 @@ name: Build obsidian plugin
 on:
     push:
         branches:
-            - "*"
+            - "mobile"
 
 env:
     PLUGIN_NAME: obsidian-git
