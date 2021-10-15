@@ -2,7 +2,7 @@ name: Build obsidian plugin
 
 on:
     push:
-        tags:
+        branches:
             - "*"
 
 env:
