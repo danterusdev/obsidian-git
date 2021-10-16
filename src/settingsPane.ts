@@ -1,7 +1,6 @@
 import { Notice, PluginSettingTab, Setting } from "obsidian";
 import { IsomorphicGit } from "./isomorphicGit";
 import ObsidianGit from "./main";
-import { SimpleGit } from "./simpleGit";
 
 export class ObsidianGitSettingsTab extends PluginSettingTab {
     plugin: ObsidianGit;
@@ -336,7 +335,7 @@ export class ObsidianGitSettingsTab extends PluginSettingTab {
                         if (value) {
                             this.plugin.gitManager = new IsomorphicGit(this.plugin);
                         } else {
-                            this.plugin.gitManager = new SimpleGit(this.plugin);
+                            this.plugin.gitManager = new IsomorphicGit(this.plugin);
                         }
                         this.display();
                     }));

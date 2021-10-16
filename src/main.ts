@@ -5,7 +5,6 @@ import { ChangedFilesModal } from "./modals/changedFilesModal";
 import { CustomMessageModal } from "./modals/customMessageModal";
 import { PromiseQueue } from "./promiseQueue";
 import { ObsidianGitSettingsTab } from "./settingsPane";
-import { SimpleGit } from "./simpleGit";
 import { StatusBar } from "./statusBar";
 import { ObsidianGitSettings, PluginState } from "./types";
 
@@ -105,13 +104,9 @@ export default class ObsidianGit extends Plugin {
     }
 
     async init(): Promise<void> {
-        if (this.settings.standaloneMode || (this.app as any).isMobile) {
-            this.gitManager = new IsomorphicGit(this);
-            this.settings.standaloneMode = true;
-            await this.saveSettings();
-        } else {
-            this.gitManager = new SimpleGit(this);
-        }
+        this.gitManager = new IsomorphicGit(this);
+        this.settings.standaloneMode = true;
+        await this.saveSettings();
         const result = await this.gitManager.checkRequirements();
         switch (result) {
             case "missing-git":
@@ -163,13 +158,6 @@ export default class ObsidianGit extends Plugin {
         } else {
             this.displayMessage("Everything is up-to-date");
         }
-
-        if (this.gitManager instanceof SimpleGit) {
-            const status = await this.gitManager.status();
-            if (status.conflicted.length > 0) {
-                this.displayError(`You have ${status.conflicted.length} conflict files`);
-            }
-        }
         this.setState(PluginState.idle);
     }
 
@@ -182,17 +170,6 @@ export default class ObsidianGit extends Plugin {
         if (!fromAutoBackup) {
             const file = this.app.vault.getAbstractFileByPath(this.conflictOutputFile);
             await this.app.vault.delete(file);
-        }
-
-        if (this.gitManager instanceof SimpleGit) {
-            const status = await this.gitManager.status();
-            // check for conflict files on auto backup
-            if (fromAutoBackup && status.conflicted.length > 0) {
-                this.setState(PluginState.idle);
-                this.displayError(`Did not commit, because you have ${status.conflicted.length} conflict files. Please resolve them and commit per command.`);
-                this.handleConflict(status.conflicted);
-                return;
-            }
         }
 
         const changedFiles = (await this.gitManager.status()).changed;
@@ -223,14 +200,8 @@ export default class ObsidianGit extends Plugin {
                 }
 
                 let status: any;
-                if (this.gitManager instanceof SimpleGit && (status = await this.gitManager.status()).conflicted.length > 0) {
-                    this.displayError(`Cannot push. You have ${status.conflicted.length} conflict files`);
-                    this.handleConflict(status.conflicted);
-                    return;
-                } else {
-                    const pushedFiles = await this.gitManager.push();
+                const pushedFiles = await this.gitManager.push();
                     this.displayMessage(`Pushed ${pushedFiles} files to remote`);
-                }
             } else {
                 this.displayMessage("No changes to push");
             }

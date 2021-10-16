@@ -39,8 +39,9 @@ export class MyAdapter {
         const res = await this.adapter.list(path);
         const all = [...res.files, ...res.folders];
         let formattedAll = all.map(e => normalizePath(e.substring(path.length)));
-        formattedAll = formattedAll.filter(item => !item.startsWith("."));
+        //formattedAll = formattedAll.filter(item => !item.startsWith("."));
         formattedAll.remove("_git");
+	formattedAll.remove("workspace");
 
         return formattedAll;
     }
